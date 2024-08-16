@@ -126,8 +126,12 @@ func (s *Scanner) addSlashOrIgnoreComment() {
 
 func (s *Scanner) addString() {
 	s.skipUntil('"', '\n')
+	if s.isAtEnd() {
+		s.logError("Unterminated string.")
+		return
+	}
 	c := s.sourceRunes[s.current]
-	if s.isAtEnd() || c == '\n' {
+	if c == '\n' {
 		s.logError("Unterminated string.")
 	} else if c == '"' {
 		s.current++
