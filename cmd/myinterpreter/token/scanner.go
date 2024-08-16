@@ -61,6 +61,10 @@ func (s *Scanner) scanToken() {
 		s.addToken(SEMICOLON)
 	case '*':
 		s.addToken(STAR)
+	case '\n':
+		s.line++
+	default:
+		s.logError(c)
 	}
 }
 
@@ -83,4 +87,8 @@ func (s *Scanner) PrintLines() {
 	for _, t := range s.tokens {
 		fmt.Fprintf(os.Stdout, "%s\n", t)
 	}
+}
+
+func (s *Scanner) logError(r rune) {
+	fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", s.line, r)
 }
