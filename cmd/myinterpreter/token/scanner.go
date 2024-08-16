@@ -3,7 +3,10 @@ package token
 import (
 	"fmt"
 	"os"
+	"strconv"
 )
+
+var NUMBERS = []rune{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
 
 type Scanner struct {
 	sourceRunes []rune
@@ -144,8 +147,23 @@ func (s *Scanner) addString() {
 }
 
 func (s *Scanner) addNumber() {
-	s.skipUntilMatches('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '\n')
-	s.addTokenWithLiteral(NUMBER, s.source[s.start:s.current])
+	s.skipUntilMatches(NUMBERS...)
+	if s.matchCurrent('\n') {
+		s.addNumberToken()
+	} else if s.matchCurrent('.') {
+		s.current++
+		if s.matchCurrent(NUMBERS...) {
+			s.skipUntilMatches(NUMBERS...)
+			s.addNumberToken()
+		} else {
+			s.logError("Unexpected character.")
+		}
+	}
+}
+
+func (s *Scanner) addNumberToken() {
+	n, _ := strconv.ParseFloat(s.source[s.start:s.current], 64)
+	s.addTokenWithLiteral(NUMBER, n)
 }
 
 func (s *Scanner) skipUntilNotMatches(runes ...rune) {
@@ -174,7 +192,7 @@ func (s *Scanner) matchCurrent(runes ...rune) bool {
 	return result
 }
 
-func (s *Scanner) addTokenWithLiteral(t Type, literal string) {
+func (s *Scanner) addTokenWithLiteral(t Type, literal any) {
 	text := s.source[s.start:s.current]
 	s.tokens = append(s.tokens, NewToken(t, text, literal, s.line))
 }
