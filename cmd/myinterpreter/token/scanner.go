@@ -90,5 +90,5 @@ func (s *Scanner) PrintLines() {
 }
 
 func (s *Scanner) logError(r rune) {
-	fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", s.line, r)
+	fmt.Fprintf(os.Stdout, "[line %d] Error: Unexpected character: %c\n", s.line, r)
 }
