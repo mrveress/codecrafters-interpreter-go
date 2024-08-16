@@ -27,7 +27,7 @@ func NewScanner(source string) Scanner {
 }
 
 func (s *Scanner) isAtEnd() bool {
-	return s.current >= len(s.source)
+	return s.current >= len(s.sourceRunes)
 }
 
 func (s *Scanner) ScanTokens() []Token {
@@ -121,13 +121,13 @@ func (s *Scanner) addSlashOrIgnoreComment() {
 }
 
 func (s *Scanner) skipUntil(c rune) {
-	for !s.isAtEnd() && !s.matchNext(c) {
+	for s.current < len(s.sourceRunes) && !s.matchNext(c) {
 		s.current++
 	}
 }
 
 func (s *Scanner) matchNext(c rune) bool {
-	if s.current >= len(s.source) {
+	if s.current >= len(s.sourceRunes) {
 		return false
 	}
 	return s.sourceRunes[s.current] == c
