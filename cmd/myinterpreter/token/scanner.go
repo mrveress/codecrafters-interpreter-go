@@ -67,12 +67,14 @@ func (s *Scanner) scanToken() {
 		s.addComplexToken(c)
 	case '/':
 		s.addSlashOrIgnoreComment()
+	case '"':
+		s.addString()
 	case '\n':
 		s.line++
 	case '\t', ' ':
 		//Just skip
 	default:
-		s.logError(c)
+		s.logErrorRune(c)
 	}
 }
 
@@ -87,7 +89,7 @@ func (s *Scanner) addToken(t Type) {
 }
 
 func (s *Scanner) addComplexToken(c rune) {
-	if s.matchNext('=') {
+	if s.matchCurrent('=') {
 		s.current++
 		switch c {
 		case '=':
@@ -114,7 +116,7 @@ func (s *Scanner) addComplexToken(c rune) {
 }
 
 func (s *Scanner) addSlashOrIgnoreComment() {
-	if s.matchNext('/') {
+	if s.matchCurrent('/') {
 		//Means that this is comment, need to skip until new line
 		s.skipUntil('\n')
 	} else {
@@ -122,17 +124,37 @@ func (s *Scanner) addSlashOrIgnoreComment() {
 	}
 }
 
-func (s *Scanner) skipUntil(c rune) {
-	for s.current < len(s.sourceRunes) && !s.matchNext(c) {
+func (s *Scanner) addString() {
+	s.skipUntil('"', '\n')
+	c := s.sourceRunes[s.current]
+	if s.isAtEnd() || c == '\n' {
+		s.logError("Unterminated string.")
+	} else if c == '"' {
+		s.current++
+		s.addTokenWithLiteral(STRING, s.source[s.start+1:s.current-1])
+	} else {
+		panic("Something really wrong")
+	}
+}
+
+func (s *Scanner) skipUntil(runes ...rune) {
+	for s.current < len(s.sourceRunes) && !s.matchCurrent(runes...) {
 		s.current++
 	}
 }
 
-func (s *Scanner) matchNext(c rune) bool {
-	if s.current >= len(s.sourceRunes) {
+func (s *Scanner) matchCurrent(runes ...rune) bool {
+	if s.isAtEnd() {
 		return false
 	}
-	return s.sourceRunes[s.current] == c
+	result := false
+	for _, r := range runes {
+		if s.sourceRunes[s.current] == r {
+			result = true
+			break
+		}
+	}
+	return result
 }
 
 func (s *Scanner) addTokenWithLiteral(t Type, literal string) {
@@ -146,9 +168,13 @@ func (s *Scanner) PrintLines() {
 	}
 }
 
-func (s *Scanner) logError(r rune) {
+func (s *Scanner) logError(message string) {
 	s.errorsCount++
-	fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", s.line, r)
+	fmt.Fprintf(os.Stderr, "[line %d] Error: %s\n", s.line, message)
+}
+
+func (s *Scanner) logErrorRune(r rune) {
+	s.logError(fmt.Sprintf("Unexpected character: %c", r))
 }
 
 func (s *Scanner) GetExitCode() int {
