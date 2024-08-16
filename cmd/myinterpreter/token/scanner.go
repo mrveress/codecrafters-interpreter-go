@@ -69,6 +69,8 @@ func (s *Scanner) scanToken() {
 		s.addSlashOrIgnoreComment()
 	case '\n':
 		s.line++
+	case '\t', ' ':
+		//Just skip
 	default:
 		s.logError(c)
 	}
