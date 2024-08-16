@@ -63,6 +63,8 @@ func (s *Scanner) scanToken() {
 		s.addToken(SEMICOLON)
 	case '*':
 		s.addToken(STAR)
+	case '=':
+		s.addComplexToken(c)
 	case '\n':
 		s.line++
 	default:
@@ -78,6 +80,28 @@ func (s *Scanner) advance() rune {
 
 func (s *Scanner) addToken(t Type) {
 	s.addTokenWithLiteral(t, "null")
+}
+
+func (s *Scanner) addComplexToken(c rune) {
+	if s.matchNext('=') {
+		s.current++
+		switch c {
+		case '=':
+			s.addToken(EQUAL_EQUAL)
+		}
+	} else {
+		switch c {
+		case '=':
+			s.addToken(EQUAL)
+		}
+	}
+}
+
+func (s *Scanner) matchNext(c rune) bool {
+	if s.current >= len(s.source) {
+		return false
+	}
+	return s.sourceRunes[s.current] == c
 }
 
 func (s *Scanner) addTokenWithLiteral(t Type, literal string) {
