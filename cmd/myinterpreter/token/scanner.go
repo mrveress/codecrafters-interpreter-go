@@ -72,16 +72,27 @@ func (s *Scanner) scanToken() {
 		s.addSlashOrIgnoreComment()
 	case '"':
 		s.addString()
-	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-		s.addNumber()
 	case '\n':
 		s.line++
 	case '\t', ' ':
 		//Just skip
 	default:
-		s.logErrorRune(c)
+		{
+			switch {
+			case isNumeric(c):
+				s.addNumber()
+			case isAlpha(c):
+				s.addIdentifier()
+			default:
+				s.logErrorRune(c)
+			}
+		}
 	}
 }
+
+func isNumeric(c rune) bool      { return c >= '0' && c <= '9' }
+func isAlpha(c rune) bool        { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' }
+func isAlphaNumeric(c rune) bool { return isNumeric(c) || isAlpha(c) }
 
 func (s *Scanner) advance() rune {
 	result := s.sourceRunes[s.current]
@@ -166,14 +177,25 @@ func (s *Scanner) addNumberToken() {
 	s.addTokenWithLiteral(NUMBER, n)
 }
 
+func (s *Scanner) addIdentifier() {
+	s.skipUntilPredicate(isAlphaNumeric)
+	s.addToken(IDENTIFIER)
+}
+
 func (s *Scanner) skipUntilNotMatches(runes ...rune) {
-	for s.current < len(s.sourceRunes) && !s.matchCurrent(runes...) {
+	for !s.isAtEnd() && !s.matchCurrent(runes...) {
 		s.current++
 	}
 }
 
 func (s *Scanner) skipUntilMatches(runes ...rune) {
-	for s.current < len(s.sourceRunes) && s.matchCurrent(runes...) {
+	for !s.isAtEnd() && s.matchCurrent(runes...) {
+		s.current++
+	}
+}
+
+func (s *Scanner) skipUntilPredicate(pred func(rune) bool) {
+	for !s.isAtEnd() && pred(s.sourceRunes[s.current]) {
 		s.current++
 	}
 }
