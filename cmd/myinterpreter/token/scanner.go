@@ -65,6 +65,8 @@ func (s *Scanner) scanToken() {
 		s.addToken(STAR)
 	case '=', '!', '<', '>':
 		s.addComplexToken(c)
+	case '/':
+		s.addSlashOrIgnoreComment()
 	case '\n':
 		s.line++
 	default:
@@ -106,6 +108,21 @@ func (s *Scanner) addComplexToken(c rune) {
 		case '>':
 			s.addToken(GREATER)
 		}
+	}
+}
+
+func (s *Scanner) addSlashOrIgnoreComment() {
+	if s.matchNext('/') {
+		//Means that this is comment, need to skip until new line
+		s.skipUntil('\n')
+	} else {
+		s.addToken(SLASH)
+	}
+}
+
+func (s *Scanner) skipUntil(c rune) {
+	for !s.isAtEnd() && !s.matchNext(c) {
+		s.current++
 	}
 }
 
