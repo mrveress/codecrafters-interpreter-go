@@ -12,6 +12,7 @@ type Scanner struct {
 	start       int
 	current     int
 	line        int
+	errorsCount int
 }
 
 func NewScanner(source string) Scanner {
@@ -21,7 +22,8 @@ func NewScanner(source string) Scanner {
 		tokens:      make([]Token, 0),
 		start:       0,
 		current:     0,
-		line:        1}
+		line:        1,
+		errorsCount: 0}
 }
 
 func (s *Scanner) isAtEnd() bool {
@@ -90,5 +92,14 @@ func (s *Scanner) PrintLines() {
 }
 
 func (s *Scanner) logError(r rune) {
-	fmt.Fprintf(os.Stdout, "[line %d] Error: Unexpected character: %c\n", s.line, r)
+	s.errorsCount++
+	fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", s.line, r)
+}
+
+func (s *Scanner) GetExitCode() int {
+	result := 0
+	if s.errorsCount > 0 {
+		result = 65
+	}
+	return result
 }

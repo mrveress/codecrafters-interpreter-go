@@ -32,4 +32,5 @@ func main() {
 	scanner := token.NewScanner(string(fileContents))
 	scanner.ScanTokens()
 	scanner.PrintLines()
+	os.Exit(scanner.GetExitCode())
 }
