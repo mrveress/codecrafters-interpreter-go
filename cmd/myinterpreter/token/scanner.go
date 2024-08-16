@@ -63,7 +63,7 @@ func (s *Scanner) scanToken() {
 		s.addToken(SEMICOLON)
 	case '*':
 		s.addToken(STAR)
-	case '=':
+	case '=', '!':
 		s.addComplexToken(c)
 	case '\n':
 		s.line++
@@ -88,11 +88,15 @@ func (s *Scanner) addComplexToken(c rune) {
 		switch c {
 		case '=':
 			s.addToken(EQUAL_EQUAL)
+		case '!':
+			s.addToken(BANG_EQUAL)
 		}
 	} else {
 		switch c {
 		case '=':
 			s.addToken(EQUAL)
+		case '!':
+			s.addToken(BANG)
 		}
 	}
 }
