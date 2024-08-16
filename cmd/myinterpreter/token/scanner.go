@@ -69,6 +69,8 @@ func (s *Scanner) scanToken() {
 		s.addSlashOrIgnoreComment()
 	case '"':
 		s.addString()
+	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+		s.addNumber()
 	case '\n':
 		s.line++
 	case '\t', ' ':
@@ -118,14 +120,14 @@ func (s *Scanner) addComplexToken(c rune) {
 func (s *Scanner) addSlashOrIgnoreComment() {
 	if s.matchCurrent('/') {
 		//Means that this is comment, need to skip until new line
-		s.skipUntil('\n')
+		s.skipUntilNotMatches('\n')
 	} else {
 		s.addToken(SLASH)
 	}
 }
 
 func (s *Scanner) addString() {
-	s.skipUntil('"', '\n')
+	s.skipUntilNotMatches('"', '\n')
 	if s.isAtEnd() {
 		s.logError("Unterminated string.")
 		return
@@ -141,8 +143,19 @@ func (s *Scanner) addString() {
 	}
 }
 
-func (s *Scanner) skipUntil(runes ...rune) {
+func (s *Scanner) addNumber() {
+	s.skipUntilMatches('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '\n')
+	s.addTokenWithLiteral(NUMBER, s.source[s.start:s.current])
+}
+
+func (s *Scanner) skipUntilNotMatches(runes ...rune) {
 	for s.current < len(s.sourceRunes) && !s.matchCurrent(runes...) {
+		s.current++
+	}
+}
+
+func (s *Scanner) skipUntilMatches(runes ...rune) {
+	for s.current < len(s.sourceRunes) && s.matchCurrent(runes...) {
 		s.current++
 	}
 }
