@@ -148,15 +148,15 @@ func (s *Scanner) addString() {
 
 func (s *Scanner) addNumber() {
 	s.skipUntilMatches(NUMBERS...)
-	if s.matchCurrent('\n') {
+	if !s.matchCurrent('.') {
 		s.addNumberToken()
-	} else if s.matchCurrent('.') {
-		s.current++
-		if s.matchCurrent(NUMBERS...) {
+	} else {
+		if s.matchNext(NUMBERS...) {
+			s.current++ //Skip dot as part of number
 			s.skipUntilMatches(NUMBERS...)
 			s.addNumberToken()
 		} else {
-			s.logError("Unexpected character.")
+			s.addNumberToken()
 		}
 	}
 }
@@ -179,12 +179,20 @@ func (s *Scanner) skipUntilMatches(runes ...rune) {
 }
 
 func (s *Scanner) matchCurrent(runes ...rune) bool {
-	if s.isAtEnd() {
+	return s.matchAtIndex(s.current, runes...)
+}
+
+func (s *Scanner) matchNext(runes ...rune) bool {
+	return s.matchAtIndex(s.current+1, runes...)
+}
+
+func (s *Scanner) matchAtIndex(index int, runes ...rune) bool {
+	if index >= len(s.sourceRunes) || index < 0 {
 		return false
 	}
 	result := false
 	for _, r := range runes {
-		if s.sourceRunes[s.current] == r {
+		if s.sourceRunes[index] == r {
 			result = true
 			break
 		}
