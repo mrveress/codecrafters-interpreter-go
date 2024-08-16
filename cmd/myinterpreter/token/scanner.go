@@ -82,7 +82,7 @@ func (s *Scanner) scanToken() {
 			case isNumeric(c):
 				s.addNumber()
 			case isAlpha(c):
-				s.addIdentifier()
+				s.addIdentifierOrKeyword()
 			default:
 				s.logErrorRune(c)
 			}
@@ -177,9 +177,9 @@ func (s *Scanner) addNumberToken() {
 	s.addTokenWithLiteral(NUMBER, n)
 }
 
-func (s *Scanner) addIdentifier() {
+func (s *Scanner) addIdentifierOrKeyword() {
 	s.skipUntilPredicate(isAlphaNumeric)
-	s.addToken(IDENTIFIER)
+	s.addIdentifierOrKeywordToken()
 }
 
 func (s *Scanner) skipUntilNotMatches(runes ...rune) {
@@ -220,6 +220,16 @@ func (s *Scanner) matchAtIndex(index int, runes ...rune) bool {
 		}
 	}
 	return result
+}
+
+func (s *Scanner) addIdentifierOrKeywordToken() {
+	text := s.source[s.start:s.current]
+	val, ok := KEYWORDS[text]
+	if ok {
+		s.addTokenWithLiteral(val, "null")
+	} else {
+		s.addTokenWithLiteral(IDENTIFIER, "null")
+	}
 }
 
 func (s *Scanner) addTokenWithLiteral(t Type, literal any) {

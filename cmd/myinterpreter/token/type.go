@@ -133,58 +133,20 @@ func (t Type) String() string {
 	}
 }
 
-/*var TYPE_TO_LEXEME = map[Type]string{
-	LEFT_PAREN:    "(",
-	RIGHT_PAREN:   ")",
-	LEFT_BRACE:    "{",
-	RIGHT_BRACE:   "}",
-	COMMA:         ",",
-	DOT:           ".",
-	MINUS:         "-",
-	PLUS:          "+",
-	SEMICOLON:     ";",
-	SLASH:         "/",
-	STAR:          "*",
-	BANG:          "!",
-	BANG_EQUAL:    "!=",
-	EQUAL:         "=",
-	EQUAL_EQUAL:   "==",
-	GREATER:       ">",
-	GREATER_EQUAL: ">=",
-	LESS:          "<",
-	LESS_EQUAL:    "<=",
-	//IDENTIFIER:    "IDENTIFIER",
-	//STRING:        "STRING",
-	//NUMBER:        "NUMBER",
-	//AND:           "&&",
-	CLASS: "class",
-	ELSE:  "else",
-	FALSE: "false",
-	//FUN:           "func",
-	FOR: "for",
-	IF:  "if",
-	NIL: "nil",
-	//OR:            "||",
-	PRINT:  "print",
-	RETURN: "return",
-	SUPER:  "super",
-	THIS:   "this",
-	TRUE:   "true",
-	VAR:    "var",
-	WHILE:  "while"}
-
-func GetLexemeByType(tokenType Type) string {
-	return TYPE_TO_LEXEME[tokenType]
-}
-
-func GetTypeByLexeme(lexeme string) Type {
-	var result Type = -1
-	for key, value := range TYPE_TO_LEXEME {
-		if value == lexeme {
-			result = key
-			break
-		}
-	}
-	return result
-}
-*/
+var KEYWORDS = map[string]Type{
+	"and":    AND,
+	"class":  CLASS,
+	"else":   ELSE,
+	"false":  FALSE,
+	"for":    FOR,
+	"fun":    FUN,
+	"if":     IF,
+	"nil":    NIL,
+	"or":     OR,
+	"print":  PRINT,
+	"return": RETURN,
+	"super":  SUPER,
+	"this":   THIS,
+	"true":   TRUE,
+	"var":    VAR,
+	"while":  WHILE}
