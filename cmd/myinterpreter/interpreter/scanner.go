@@ -1,4 +1,4 @@
-package token
+package interpreter
 
 import (
 	"fmt"
@@ -6,66 +6,44 @@ import (
 	"strconv"
 )
 
-var NUMBERS = []rune{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
-
 type Scanner struct {
-	sourceRunes []rune
-	source      string
-	tokens      []Token
-	start       int
-	current     int
-	line        int
-	errorsCount int
+	SourceRunes []rune
+	Source      string
+	Tokens      []Token
+	Start       int
+	Current     int
+	Line        int
+	ErrorsCount int
 }
 
 func NewScanner(source string) Scanner {
 	return Scanner{
-		sourceRunes: []rune(source),
-		source:      source,
-		tokens:      make([]Token, 0),
-		start:       0,
-		current:     0,
-		line:        1,
-		errorsCount: 0}
+		SourceRunes: []rune(source),
+		Source:      source,
+		Tokens:      make([]Token, 0),
+		Start:       0,
+		Current:     0,
+		Line:        1,
+		ErrorsCount: 0}
 }
 
 func (s *Scanner) isAtEnd() bool {
-	return s.current >= len(s.sourceRunes)
+	return s.Current >= len(s.SourceRunes)
 }
 
 func (s *Scanner) ScanTokens() []Token {
 	for !s.isAtEnd() {
-		s.start = s.current
+		s.Start = s.Current
 		s.scanToken()
 	}
 
-	s.tokens = append(s.tokens, NewToken(EOF, "", "null", s.line))
-	return s.tokens
+	s.Tokens = append(s.Tokens, NewToken(EOF, "", nil, s.Line))
+	return s.Tokens
 }
 
 func (s *Scanner) scanToken() {
 	c := s.advance()
 	switch c {
-	case '(':
-		s.addToken(LEFT_PAREN)
-	case ')':
-		s.addToken(RIGHT_PAREN)
-	case '{':
-		s.addToken(LEFT_BRACE)
-	case '}':
-		s.addToken(RIGHT_BRACE)
-	case ',':
-		s.addToken(COMMA)
-	case '.':
-		s.addToken(DOT)
-	case '-':
-		s.addToken(MINUS)
-	case '+':
-		s.addToken(PLUS)
-	case ';':
-		s.addToken(SEMICOLON)
-	case '*':
-		s.addToken(STAR)
 	case '=', '!', '<', '>':
 		s.addComplexToken(c)
 	case '/':
@@ -73,12 +51,14 @@ func (s *Scanner) scanToken() {
 	case '"':
 		s.addString()
 	case '\n':
-		s.line++
+		s.Line++
 	case '\t', ' ':
 		//Just skip
 	default:
 		{
 			switch {
+			case isOneRuneToken(c):
+				s.addToken(RuneTokens[c])
 			case isNumeric(c):
 				s.addNumber()
 			case isAlpha(c):
@@ -90,23 +70,31 @@ func (s *Scanner) scanToken() {
 	}
 }
 
+func isOneRuneToken(c rune) bool {
+	switch c {
+	case '(', ')', '{', '}', ',', '.', '-', '+', ';', '*':
+		return true
+	default:
+		return false
+	}
+}
 func isNumeric(c rune) bool      { return c >= '0' && c <= '9' }
 func isAlpha(c rune) bool        { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' }
 func isAlphaNumeric(c rune) bool { return isNumeric(c) || isAlpha(c) }
 
 func (s *Scanner) advance() rune {
-	result := s.sourceRunes[s.current]
-	s.current++
+	result := s.SourceRunes[s.Current]
+	s.Current++
 	return result
 }
 
-func (s *Scanner) addToken(t Type) {
-	s.addTokenWithLiteral(t, "null")
+func (s *Scanner) addToken(t TokenType) {
+	s.addTokenWithLiteral(t, nil)
 }
 
 func (s *Scanner) addComplexToken(c rune) {
 	if s.matchCurrent('=') {
-		s.current++
+		s.Current++
 		switch c {
 		case '=':
 			s.addToken(EQUAL_EQUAL)
@@ -146,25 +134,25 @@ func (s *Scanner) addString() {
 		s.logError("Unterminated string.")
 		return
 	}
-	c := s.sourceRunes[s.current]
+	c := s.SourceRunes[s.Current]
 	if c == '\n' {
 		s.logError("Unterminated string.")
 	} else if c == '"' {
-		s.current++
-		s.addTokenWithLiteral(STRING, s.source[s.start+1:s.current-1])
+		s.Current++
+		s.addTokenWithLiteral(STRING, s.Source[s.Start+1:s.Current-1])
 	} else {
 		panic("Something really wrong")
 	}
 }
 
 func (s *Scanner) addNumber() {
-	s.skipUntilMatches(NUMBERS...)
+	s.skipUntilPredicate(isNumeric)
 	if !s.matchCurrent('.') {
 		s.addNumberToken()
 	} else {
-		if s.matchNext(NUMBERS...) {
-			s.current++ //Skip dot as part of number
-			s.skipUntilMatches(NUMBERS...)
+		if s.matchNextPredicate(isNumeric) {
+			s.Current++ //Skip dot as part of number
+			s.skipUntilPredicate(isNumeric)
 			s.addNumberToken()
 		} else {
 			s.addNumberToken()
@@ -173,7 +161,7 @@ func (s *Scanner) addNumber() {
 }
 
 func (s *Scanner) addNumberToken() {
-	n, _ := strconv.ParseFloat(s.source[s.start:s.current], 64)
+	n, _ := strconv.ParseFloat(s.Source[s.Start:s.Current], 64)
 	s.addTokenWithLiteral(NUMBER, n)
 }
 
@@ -184,37 +172,45 @@ func (s *Scanner) addIdentifierOrKeyword() {
 
 func (s *Scanner) skipUntilNotMatches(runes ...rune) {
 	for !s.isAtEnd() && !s.matchCurrent(runes...) {
-		s.current++
+		s.Current++
 	}
 }
 
 func (s *Scanner) skipUntilMatches(runes ...rune) {
 	for !s.isAtEnd() && s.matchCurrent(runes...) {
-		s.current++
+		s.Current++
 	}
 }
 
 func (s *Scanner) skipUntilPredicate(pred func(rune) bool) {
-	for !s.isAtEnd() && pred(s.sourceRunes[s.current]) {
-		s.current++
+	for !s.isAtEnd() && pred(s.SourceRunes[s.Current]) {
+		s.Current++
 	}
 }
 
 func (s *Scanner) matchCurrent(runes ...rune) bool {
-	return s.matchAtIndex(s.current, runes...)
+	return s.matchAtIndex(s.Current, runes...)
+}
+
+func (s *Scanner) matchCurrentPredicate(pred func(rune) bool) bool {
+	return s.matchAtIndexPredicate(s.Current, pred)
 }
 
 func (s *Scanner) matchNext(runes ...rune) bool {
-	return s.matchAtIndex(s.current+1, runes...)
+	return s.matchAtIndex(s.Current+1, runes...)
+}
+
+func (s *Scanner) matchNextPredicate(pred func(rune) bool) bool {
+	return s.matchAtIndexPredicate(s.Current+1, pred)
 }
 
 func (s *Scanner) matchAtIndex(index int, runes ...rune) bool {
-	if index >= len(s.sourceRunes) || index < 0 {
+	if index >= len(s.SourceRunes) || index < 0 {
 		return false
 	}
 	result := false
 	for _, r := range runes {
-		if s.sourceRunes[index] == r {
+		if s.SourceRunes[index] == r {
 			result = true
 			break
 		}
@@ -222,30 +218,37 @@ func (s *Scanner) matchAtIndex(index int, runes ...rune) bool {
 	return result
 }
 
+func (s *Scanner) matchAtIndexPredicate(index int, pred func(rune) bool) bool {
+	if index >= len(s.SourceRunes) || index < 0 {
+		return false
+	}
+	return pred(s.SourceRunes[index])
+}
+
 func (s *Scanner) addIdentifierOrKeywordToken() {
-	text := s.source[s.start:s.current]
-	val, ok := KEYWORDS[text]
+	text := s.Source[s.Start:s.Current]
+	val, ok := Keywords[text]
 	if ok {
-		s.addTokenWithLiteral(val, "null")
+		s.addTokenWithLiteral(val, nil)
 	} else {
-		s.addTokenWithLiteral(IDENTIFIER, "null")
+		s.addTokenWithLiteral(IDENTIFIER, nil)
 	}
 }
 
-func (s *Scanner) addTokenWithLiteral(t Type, literal any) {
-	text := s.source[s.start:s.current]
-	s.tokens = append(s.tokens, NewToken(t, text, literal, s.line))
+func (s *Scanner) addTokenWithLiteral(t TokenType, literal any) {
+	text := s.Source[s.Start:s.Current]
+	s.Tokens = append(s.Tokens, NewToken(t, text, literal, s.Line))
 }
 
 func (s *Scanner) PrintLines() {
-	for _, t := range s.tokens {
+	for _, t := range s.Tokens {
 		fmt.Fprintf(os.Stdout, "%s\n", t)
 	}
 }
 
 func (s *Scanner) logError(message string) {
-	s.errorsCount++
-	fmt.Fprintf(os.Stderr, "[line %d] Error: %s\n", s.line, message)
+	s.ErrorsCount++
+	fmt.Fprintf(os.Stderr, "[line %d] Error: %s\n", s.Line, message)
 }
 
 func (s *Scanner) logErrorRune(r rune) {
@@ -254,7 +257,7 @@ func (s *Scanner) logErrorRune(r rune) {
 
 func (s *Scanner) GetExitCode() int {
 	result := 0
-	if s.errorsCount > 0 {
+	if s.ErrorsCount > 0 {
 		result = 65
 	}
 	return result

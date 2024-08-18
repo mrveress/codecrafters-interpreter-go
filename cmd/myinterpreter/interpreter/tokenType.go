@@ -1,55 +1,55 @@
-package token
+package interpreter
 
-type Type int
+type TokenType int
 
 const (
-	LEFT_PAREN  Type = iota
-	RIGHT_PAREN Type = iota
-	LEFT_BRACE  Type = iota
-	RIGHT_BRACE Type = iota
+	LEFT_PAREN  TokenType = iota
+	RIGHT_PAREN TokenType = iota
+	LEFT_BRACE  TokenType = iota
+	RIGHT_BRACE TokenType = iota
 
-	COMMA     Type = iota
-	DOT       Type = iota
-	MINUS     Type = iota
-	PLUS      Type = iota
-	SEMICOLON Type = iota
-	SLASH     Type = iota
-	STAR      Type = iota
+	COMMA     TokenType = iota
+	DOT       TokenType = iota
+	MINUS     TokenType = iota
+	PLUS      TokenType = iota
+	SEMICOLON TokenType = iota
+	SLASH     TokenType = iota
+	STAR      TokenType = iota
 
-	BANG          Type = iota
-	BANG_EQUAL    Type = iota
-	EQUAL         Type = iota
-	EQUAL_EQUAL   Type = iota
-	GREATER       Type = iota
-	GREATER_EQUAL Type = iota
-	LESS          Type = iota
-	LESS_EQUAL    Type = iota
+	BANG          TokenType = iota
+	BANG_EQUAL    TokenType = iota
+	EQUAL         TokenType = iota
+	EQUAL_EQUAL   TokenType = iota
+	GREATER       TokenType = iota
+	GREATER_EQUAL TokenType = iota
+	LESS          TokenType = iota
+	LESS_EQUAL    TokenType = iota
 
-	IDENTIFIER Type = iota
-	STRING     Type = iota
-	NUMBER     Type = iota
+	IDENTIFIER TokenType = iota
+	STRING     TokenType = iota
+	NUMBER     TokenType = iota
 
-	AND    Type = iota
-	CLASS  Type = iota
-	ELSE   Type = iota
-	FALSE  Type = iota
-	FUN    Type = iota
-	FOR    Type = iota
-	IF     Type = iota
-	NIL    Type = iota
-	OR     Type = iota
-	PRINT  Type = iota
-	RETURN Type = iota
-	SUPER  Type = iota
-	THIS   Type = iota
-	TRUE   Type = iota
-	VAR    Type = iota
-	WHILE  Type = iota
-	EOF    Type = iota
+	AND    TokenType = iota
+	CLASS  TokenType = iota
+	ELSE   TokenType = iota
+	FALSE  TokenType = iota
+	FUN    TokenType = iota
+	FOR    TokenType = iota
+	IF     TokenType = iota
+	NIL    TokenType = iota
+	OR     TokenType = iota
+	PRINT  TokenType = iota
+	RETURN TokenType = iota
+	SUPER  TokenType = iota
+	THIS   TokenType = iota
+	TRUE   TokenType = iota
+	VAR    TokenType = iota
+	WHILE  TokenType = iota
+	EOF    TokenType = iota
 )
 
-func (t Type) String() string {
-	switch t {
+func (tt TokenType) String() string {
+	switch tt {
 	case LEFT_PAREN:
 		return "LEFT_PAREN"
 	case RIGHT_PAREN:
@@ -133,7 +133,20 @@ func (t Type) String() string {
 	}
 }
 
-var KEYWORDS = map[string]Type{
+var RuneTokens = map[rune]TokenType{
+	'(': LEFT_PAREN,
+	')': RIGHT_PAREN,
+	'{': LEFT_BRACE,
+	'}': RIGHT_BRACE,
+	',': COMMA,
+	'.': DOT,
+	'-': MINUS,
+	'+': PLUS,
+	';': SEMICOLON,
+	'*': STAR,
+}
+
+var Keywords = map[string]TokenType{
 	"and":    AND,
 	"class":  CLASS,
 	"else":   ELSE,
