@@ -30,14 +30,6 @@ func main() {
 		scanner.ScanTokens()
 		scanner.PrintLines()
 		os.Exit(scanner.GetExitCode())
-	} else if command == "testprint" {
-		expression := interpreter.Binary{
-			interpreter.Unary{
-				interpreter.Token{interpreter.MINUS, "-", nil, 1}, interpreter.Literal{123}},
-			interpreter.Token{interpreter.STAR, "*", nil, 1},
-			interpreter.Grouping{interpreter.Literal{45.67}}}
-
-		interpreter.AstPrinter{}.Print(expression)
 	} else if command == "parse" {
 		filename := os.Args[2]
 		fileContents := getFileContents(filename)

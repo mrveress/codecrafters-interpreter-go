@@ -117,8 +117,11 @@ func (p *Parser) primary() Expr {
 	}
 
 	if p.match(LEFT_PAREN) {
+		if p.match(RIGHT_PAREN) {
+			p.error("Empty parentheses.")
+		}
 		expr := p.expression()
-		p.consume(RIGHT_PAREN, "Expect ')' after expression.")
+		p.consume(RIGHT_PAREN, "Unmatched parentheses.")
 		return Grouping{expr}
 	}
 
@@ -129,11 +132,11 @@ func (p *Parser) consume(t TokenType, message string) Token {
 	if p.check(t) {
 		return p.advance()
 	}
-	panic(p.error(p.peek(), message))
+	p.error(message)
+	return Token{} //Just placeholder
 }
 
-func (p *Parser) error(token Token, message string) string {
-	errorMessage := fmt.Sprintf("%s: %s\n", token, message)
-	fmt.Fprint(os.Stderr, errorMessage)
-	return errorMessage
+func (p *Parser) error(message string) {
+	fmt.Fprintf(os.Stderr, "Error: %s\n", message)
+	os.Exit(65)
 }
