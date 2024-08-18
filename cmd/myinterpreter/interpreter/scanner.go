@@ -121,7 +121,7 @@ func (s *Scanner) addComplexToken(c rune) {
 
 func (s *Scanner) addSlashOrIgnoreComment() {
 	if s.matchCurrent('/') {
-		//Means that this is comment, need to skip until new line
+		//Means this is comment, need to skip until new line
 		s.skipUntilNotMatches('\n')
 	} else {
 		s.addToken(SLASH)
@@ -242,13 +242,13 @@ func (s *Scanner) addTokenWithLiteral(t TokenType, literal any) {
 
 func (s *Scanner) PrintLines() {
 	for _, t := range s.Tokens {
-		fmt.Fprintf(os.Stdout, "%s\n", t)
+		Fprintf(os.Stdout, "%s\n", t)
 	}
 }
 
 func (s *Scanner) logError(message string) {
 	s.ErrorsCount++
-	fmt.Fprintf(os.Stderr, "[line %d] Error: %s\n", s.Line, message)
+	Fprintf(os.Stderr, "[line %d] Error: %s\n", s.Line, message)
 }
 
 func (s *Scanner) logErrorRune(r rune) {

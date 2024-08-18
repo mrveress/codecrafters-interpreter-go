@@ -1,10 +1,5 @@
 package interpreter
 
-import (
-	"fmt"
-	"os"
-)
-
 type Parser struct {
 	Tokens  []Token
 	Current int
@@ -138,6 +133,5 @@ func (p *Parser) consume(t TokenType, message string) Token {
 }
 
 func (p *Parser) error(message string) {
-	fmt.Fprintf(os.Stderr, "Error: %s\n", message)
-	os.Exit(65)
+	Errorf(65, "Error: %s\n", message)
 }

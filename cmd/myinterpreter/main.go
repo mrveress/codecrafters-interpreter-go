@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/interpreter"
 	"os"
 )
@@ -11,16 +10,14 @@ func main() {
 	//fmt.Fprintln(os.Stderr, "Logs from your program will appear here!")
 
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "Usage: ./your_program.sh <command>* <filename>")
-		os.Exit(1)
+		interpreter.Errorln(1, "Usage: ./your_program.sh <command - required> <filename>")
 	}
 
 	command := os.Args[1]
 
 	if command == "tokenize" {
 		if len(os.Args) < 3 {
-			fmt.Fprintln(os.Stderr, "Usage: ./your_program.sh tokenize <filename>")
-			os.Exit(1)
+			interpreter.Errorln(1, "Usage: ./your_program.sh tokenize <filename>")
 		}
 
 		filename := os.Args[2]
@@ -29,8 +26,13 @@ func main() {
 		scanner := interpreter.NewScanner(fileContents)
 		scanner.ScanTokens()
 		scanner.PrintLines()
+
 		os.Exit(scanner.GetExitCode())
 	} else if command == "parse" {
+		if len(os.Args) < 3 {
+			interpreter.Errorln(1, "Usage: ./your_program.sh parse <filename>")
+		}
+
 		filename := os.Args[2]
 		fileContents := getFileContents(filename)
 
@@ -40,6 +42,10 @@ func main() {
 		parser := interpreter.NewParser(scanner.Tokens)
 		interpreter.AstPrinter{}.Print(parser.Parse())
 	} else if command == "evaluate" {
+		if len(os.Args) < 3 {
+			interpreter.Errorln(1, "Usage: ./your_program.sh evaluate <filename>")
+		}
+
 		filename := os.Args[2]
 		fileContents := getFileContents(filename)
 
@@ -49,20 +55,19 @@ func main() {
 		parser := interpreter.NewParser(scanner.Tokens)
 		expression := parser.Parse()
 
-		interpret := interpreter.Interpreter{}
+		interpret := interpreter.NewInterpreter()
 		result := interpret.Interpret(expression)
-		fmt.Fprintf(os.Stdout, "%s\n", result)
+
+		interpreter.Fprintf(os.Stdout, "%s\n", result)
 	} else {
-		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
-		os.Exit(1)
+		interpreter.Errorf(1, "Unknown command: %s\n", command)
 	}
 }
 
 func getFileContents(filename string) string {
 	fileContents, err := os.ReadFile(filename)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
-		os.Exit(1)
+		interpreter.Errorf(1, "Error reading file: %v\n", err)
 	}
 	return string(fileContents)
 }

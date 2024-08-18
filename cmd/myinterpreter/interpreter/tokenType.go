@@ -2,6 +2,7 @@ package interpreter
 
 type TokenType int
 
+//goland:noinspection GoSnakeCaseUsage
 const (
 	LEFT_PAREN  TokenType = iota
 	RIGHT_PAREN TokenType = iota

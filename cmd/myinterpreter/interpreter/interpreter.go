@@ -2,10 +2,13 @@ package interpreter
 
 import (
 	"fmt"
-	"os"
 )
 
 type Interpreter struct{}
+
+func NewInterpreter() Interpreter {
+	return Interpreter{}
+}
 
 func (i *Interpreter) visitLiteral(expr *Literal) any {
 	return expr.Value
@@ -105,7 +108,7 @@ func (i *Interpreter) checkNumberOperand(operator Token, operand any) {
 	case float64:
 		return
 	default:
-		i.errorWithCode("Operand must be a number.", 70)
+		i.errorWithOperatorAndCode(operator, "Operand must be a number.", 70)
 	}
 }
 
@@ -116,10 +119,10 @@ func (i *Interpreter) checkNumberOperands(operator Token, left any, right any) {
 		case float64:
 			return
 		default:
-			i.errorWithCode("Operands must be numbers.", 70)
+			i.errorWithOperatorAndCode(operator, "Operands must be numbers.", 70)
 		}
 	default:
-		i.errorWithCode("Operands must be numbers.", 70)
+		i.errorWithOperatorAndCode(operator, "Operands must be numbers.", 70)
 	}
 }
 
@@ -130,23 +133,22 @@ func (i *Interpreter) checkNumbersOrStrings(operator Token, left any, right any)
 		case float64:
 			return
 		default:
-			i.errorWithCode("Operands must be two numbers or two strings.", 70)
+			i.errorWithOperatorAndCode(operator, "Operands must be two numbers or two strings.", 70)
 		}
 	case string:
 		switch right.(type) {
 		case string:
 			return
 		default:
-			i.errorWithCode("Operands must be two numbers or two strings.", 70)
+			i.errorWithOperatorAndCode(operator, "Operands must be two numbers or two strings.", 70)
 		}
 	default:
-		i.errorWithCode("Operands must be two numbers or two strings.", 70)
+		i.errorWithOperatorAndCode(operator, "Operands must be two numbers or two strings.", 70)
 	}
 }
 
-func (i *Interpreter) errorWithCode(message string, code int) {
-	fmt.Fprint(os.Stderr, message)
-	os.Exit(code)
+func (i *Interpreter) errorWithOperatorAndCode(operator Token, message string, code int) {
+	Errorf(code, "Interpretator Error at '%s': %s ", operator.Lexeme, message)
 }
 
 func (i *Interpreter) Interpret(expression Expr) string {
