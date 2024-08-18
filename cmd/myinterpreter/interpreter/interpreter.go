@@ -105,8 +105,7 @@ func (i *Interpreter) checkNumberOperand(operator Token, operand any) {
 	case float64:
 		return
 	default:
-		i.error("Operand must be a number.")
-		os.Exit(65)
+		i.errorWithCode("Operand must be a number.", 70)
 	}
 }
 
@@ -127,6 +126,11 @@ func (i *Interpreter) checkNumberOperands(operator Token, left any, right any) {
 func (i *Interpreter) error(message string) {
 	fmt.Fprint(os.Stderr, message)
 	os.Exit(65)
+}
+
+func (i *Interpreter) errorWithCode(message string, code int) {
+	fmt.Fprint(os.Stderr, message)
+	os.Exit(code)
 }
 
 func (i Interpreter) Interpret(expression Expr) string {
