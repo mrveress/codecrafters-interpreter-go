@@ -43,6 +43,7 @@ func (i *Interpreter) visitBinary(expr *Binary) any {
 		i.checkNumberOperands(expr.Operator, left, right)
 		return (left.(float64)) * (right.(float64))
 	case PLUS:
+		i.checkNumbersOrStrings(expr.Operator, left, right)
 		switch left.(type) {
 		case float64:
 			return (left.(float64)) + (right.(float64))
@@ -51,7 +52,6 @@ func (i *Interpreter) visitBinary(expr *Binary) any {
 		default:
 			return nil
 		}
-
 	case GREATER:
 		i.checkNumberOperands(expr.Operator, left, right)
 		return (left.(float64)) > (right.(float64))
@@ -123,9 +123,25 @@ func (i *Interpreter) checkNumberOperands(operator Token, left any, right any) {
 	}
 }
 
-func (i *Interpreter) error(message string) {
-	fmt.Fprint(os.Stderr, message)
-	os.Exit(65)
+func (i *Interpreter) checkNumbersOrStrings(operator Token, left any, right any) {
+	switch left.(type) {
+	case float64:
+		switch right.(type) {
+		case float64:
+			return
+		default:
+			i.errorWithCode("Operands must be two numbers or two strings.", 70)
+		}
+	case string:
+		switch right.(type) {
+		case string:
+			return
+		default:
+			i.errorWithCode("Operands must be two numbers or two strings.", 70)
+		}
+	default:
+		i.errorWithCode("Operands must be two numbers or two strings.", 70)
+	}
 }
 
 func (i *Interpreter) errorWithCode(message string, code int) {
@@ -133,7 +149,7 @@ func (i *Interpreter) errorWithCode(message string, code int) {
 	os.Exit(code)
 }
 
-func (i Interpreter) Interpret(expression Expr) string {
+func (i *Interpreter) Interpret(expression Expr) string {
 	value := i.evaluate(&expression)
 	return i.stringify(value)
 }

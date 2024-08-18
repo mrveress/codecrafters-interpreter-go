@@ -49,7 +49,8 @@ func main() {
 		parser := interpreter.NewParser(scanner.Tokens)
 		expression := parser.Parse()
 
-		result := interpreter.Interpreter{}.Interpret(expression)
+		interpret := interpreter.Interpreter{}
+		result := interpret.Interpret(expression)
 		fmt.Fprintf(os.Stdout, "%s\n", result)
 	} else {
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
