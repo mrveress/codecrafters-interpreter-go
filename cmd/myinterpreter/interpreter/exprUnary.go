@@ -5,6 +5,6 @@ type Unary struct {
 	Right    Expr
 }
 
-func (s Unary) accept(v ExprVisitor) string {
+func (s Unary) accept(v ExprVisitor) any {
 	return v.visitUnary(&s)
 }

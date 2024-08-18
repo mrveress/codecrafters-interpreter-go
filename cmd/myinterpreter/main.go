@@ -39,6 +39,18 @@ func main() {
 
 		parser := interpreter.NewParser(scanner.Tokens)
 		interpreter.AstPrinter{}.Print(parser.Parse())
+	} else if command == "evaluate" {
+		filename := os.Args[2]
+		fileContents := getFileContents(filename)
+
+		scanner := interpreter.NewScanner(fileContents)
+		scanner.ScanTokens()
+
+		parser := interpreter.NewParser(scanner.Tokens)
+		expression := parser.Parse()
+
+		result := interpreter.Interpreter{}.Interpret(expression)
+		fmt.Fprintf(os.Stdout, "%s\n", result)
 	} else {
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)

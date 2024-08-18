@@ -1,8 +1,8 @@
 package interpreter
 
 type ExprVisitor interface {
-	visitUnary(*Unary) string
-	visitBinary(*Binary) string
-	visitLiteral(*Literal) string
-	visitGrouping(*Grouping) string
+	visitUnary(*Unary) any
+	visitBinary(*Binary) any
+	visitLiteral(*Literal) any
+	visitGrouping(*Grouping) any
 }

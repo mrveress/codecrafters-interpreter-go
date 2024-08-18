@@ -6,7 +6,7 @@ type Literal struct {
 	Value any
 }
 
-func (s Literal) accept(v ExprVisitor) string {
+func (s Literal) accept(v ExprVisitor) any {
 	return v.visitLiteral(&s)
 }
 

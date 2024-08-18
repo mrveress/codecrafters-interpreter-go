@@ -6,6 +6,6 @@ type Binary struct {
 	Right    Expr
 }
 
-func (s Binary) accept(v ExprVisitor) string {
+func (s Binary) accept(v ExprVisitor) any {
 	return v.visitBinary(&s)
 }

@@ -125,7 +125,7 @@ func (p *Parser) primary() Expr {
 		return Grouping{expr}
 	}
 
-	p.error("Incorrect or empty input.")
+	p.error("Expect expression.")
 	panic("Parser.primary(): Unhandled Exception")
 }
 
