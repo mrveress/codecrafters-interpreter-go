@@ -116,10 +116,10 @@ func (i *Interpreter) checkNumberOperands(operator Token, left any, right any) {
 		case float64:
 			return
 		default:
-			i.error("Operands must be numbers.")
+			i.errorWithCode("Operands must be numbers.", 70)
 		}
 	default:
-		i.error("Operands must be numbers.")
+		i.errorWithCode("Operands must be numbers.", 70)
 	}
 }
 
